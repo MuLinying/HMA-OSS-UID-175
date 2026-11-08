@@ -79,12 +79,16 @@ extra["minSdkVer"] = minSdkVer
 val targetSdkVer = 37
 extra["targetSdkVer"] = targetSdkVer
 
-val minorSdkVer = 0
+val minorSdkVer = 2
 extra["minorSdkVer"] = minorSdkVer
 
-val appVerCode = 7304665
+// Pin the manager to upstream oss-175 (fe7a367). The commit-count formula is
+// inaccurate for this fork because local commits shift the count, so the
+// upstream release numbers (607 commits, versionName oss-175) are used to keep
+// the in-app update checker satisfied.
+val appVerCode = 607 + 0x6f7373 // matches upstream oss-175
 extra["appVerCode"] = appVerCode
-val appVerName = "5398de45-UID3.1"
+val appVerName = "oss-175-UID3.1"
 extra["appVerName"] = appVerName
 
 /*

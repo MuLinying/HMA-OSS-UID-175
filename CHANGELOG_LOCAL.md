@@ -1,5 +1,16 @@
 # 增强更新记录
 
+## oss-175-UID3.1
+
+基于上游 `fe7a36799f040a79c666fb05b8479e69854656df`（tag `oss-175`）。
+
+- 同步支持 Android 17 QPR3 Beta 1 及以上版本。
+- 同步目标应用列表显示系统应用、新增 usage stats 检测 Hook、外部管理器（监听 config.json 变更）、"关于"页重构、预设新增应用，以及 Hooking API 重构。
+- 同步 AGP 9.x 构建迁移与 Crowdin 翻译更新，采用上游新的 compileSdk minor 版本（37.2）。
+- UID 过滤 Hook 适配上游重构后的 Hooking API，移除 WebView 保护后不再需要的 stub。
+- 管理器版本号与上游 oss-175 对齐（versionCode 7305258，versionName oss-175-UID3.1），打开应用不再弹出上游更新公告。
+- 配置版本保持 94，UID3.1 过滤、默认开启、开机恢复和管理器配置迁移功能继续沿用。
+
 ## 5398de45-UID3.1
 
 基于上游 `5398de452582353467235fc27dadee845e5d8e13`。

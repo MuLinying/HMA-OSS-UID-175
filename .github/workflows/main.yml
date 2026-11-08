@@ -31,6 +31,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Set up NDK r27c
+        id: ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+          add-to-path: false
+
       - name: Write key
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
         run: |
@@ -56,9 +63,45 @@ jobs:
         run: |
           ./gradlew prebuild
 
+      - name: Build backend and UID payload
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          ./gradlew :zygote:assemble
+          python3 build_uid_native.py
+          python3 package_uid_payload.py
+
       - name: Build APK
         run: |
           ./gradlew :app:assemble
+
+      - name: Build UID module package
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          python3 publication/manager-migration/build_helper.py
+          MANAGER_APK=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
+          python3 publication/package_module.py \
+            --manager "$MANAGER_APK" \
+            --backend zygote/build/outputs/apk/release/zygote-release.apk \
+            --native uid-native/build/arm64-v8a.so \
+            --helper publication/manager-migration/dex/classes.dex \
+            --certificate publication/manager-migration/manager-cert.der \
+            --output publication-output/HMA-OSS-oss-175-UID3.1-arm64.zip
+
+      - name: Upload UID module package
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: HMA-OSS-oss-175-UID3.1-arm64
+          path: publication-output/HMA-OSS-oss-175-UID3.1-arm64.zip
+
+      - name: Upload manager APK
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: HMA-OSS-manager-oss-175-UID3.1
+          path: "app/build/outputs/apk/release/*.apk"
 
       - name: Upload APK mappings
         uses: actions/upload-artifact@v7
@@ -105,6 +148,7 @@ jobs:
           files: |
             ${{ steps.buildModule.outputs.releaseFile }}
             ${{ steps.buildModule.outputs.debugFile }}
+            publication-output/HMA-OSS-oss-175-UID3.1-arm64.zip
             app/src/main/assets/translators.json
           tag_name: oss-${{ steps.buildModule.outputs.ossNum }}
 

@@ -5,8 +5,18 @@ W=Path(__file__).resolve().parent
 JAVA=Path(os.environ['JAVA_HOME'])
 SDK=Path(os.environ.get('ANDROID_HOME') or os.environ['ANDROID_SDK_ROOT'])
 jar=SDK/'platforms/android-37.0/android.jar'
+if not jar.is_file():
+    candidates=sorted(SDK.glob('platforms/android-37*/android.jar'), reverse=True)
+    if not candidates:
+        raise SystemExit('No android-37* platform found in ' + str(SDK/'platforms'))
+    jar=candidates[0]
 suffix='.exe' if os.name=='nt' else ''
 d8=SDK/('build-tools/36.0.0/d8.bat' if os.name=='nt' else 'build-tools/36.0.0/d8')
+if not d8.is_file():
+    bt=sorted(SDK.glob('build-tools/*/d8'+suffix), reverse=True)
+    if not bt:
+        raise SystemExit('No build-tools d8 found in ' + str(SDK/'build-tools'))
+    d8=bt[0]
 for name in ('classes','dex'):(W/name).mkdir(exist_ok=True)
 env=dict(os.environ,JAVA_HOME=str(JAVA),JAVA_TOOL_OPTIONS='-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8')
 subprocess.run([JAVA/('bin/javac'+suffix),'-encoding','UTF-8','-source','8','-target','8','-cp',jar,'-d',W/'classes',W/'HmaManagerMigration.java'],env=env,check=True)
